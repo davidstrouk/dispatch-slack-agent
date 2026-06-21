@@ -15,6 +15,7 @@ export interface Volunteer {
   skills: string[];
   distanceMi: number;
   pastHandled: string[];
+  recentlyAssigned?: boolean; // fairness signal — true = carrying a recent load
 }
 
 export type Urgency = "low" | "medium" | "high" | "critical";
