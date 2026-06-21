@@ -8,26 +8,31 @@ const { Assistant } = boltPkg;
 // the pane is the control surface, not the data source.
 export function makeAssistant(deps: DispatchDeps, recallChannelId?: string) {
   return new Assistant({
-    threadStarted: async ({ say, setSuggestedPrompts, saveThreadContext }) => {
-      await say("Hi — tell me who needs help and I'll find the right volunteer.");
-      await saveThreadContext();
-      await setSuggestedPrompts({
-        title: "Try one of these:",
-        prompts: [
-          { title: "Dialysis ride", message: "Someone needs a ride to dialysis tomorrow morning." },
-          { title: "Groceries", message: "A family needs groceries dropped off this week." },
-        ],
-      });
+    threadStarted: async ({ say, setSuggestedPrompts, saveThreadContext, logger }) => {
+      try {
+        await say("Hi — tell me who needs help and I'll find the right volunteer.");
+        await saveThreadContext();
+        await setSuggestedPrompts({
+          title: "Try one of these:",
+          prompts: [
+            { title: "Dialysis ride", message: "Someone needs a ride to dialysis tomorrow morning." },
+            { title: "Groceries", message: "A family needs groceries dropped off this week." },
+          ],
+        });
+      } catch (e) {
+        logger.error(e);
+      }
     },
     userMessage: async ({ message, say, setTitle, setStatus }) => {
-      const m = message as any;
-      if (!m.text || !m.thread_ts) return;
-      await setTitle(m.text);
-      await setStatus({ status: "Reading the request…" });
+      if (!("text" in message) || !("thread_ts" in message) || !message.text || !message.thread_ts) return;
       try {
-        const result = await dispatchRequest(deps, m.text, { channelId: recallChannelId });
-        await setStatus({ status: `Need: ${result.need.need_type} · urgency ${result.need.urgency} — finding volunteers…` });
-        await setStatus({ status: "Searching workspace history for who's helped before…" });
+        await setTitle(message.text);
+        const result = await dispatchRequest(
+          deps,
+          message.text,
+          { channelId: recallChannelId },
+          async (status) => { await setStatus({ status }); },
+        );
         if (!result.match) {
           await say(`I couldn't find an available volunteer for *${result.need.need_type}* right now.`);
           return;

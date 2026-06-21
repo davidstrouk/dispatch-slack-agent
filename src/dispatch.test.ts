@@ -25,3 +25,22 @@ test("dispatchRequest passes channel scope + excludeTs through to recall", async
   await dispatchRequest({ ...deps, recallPrecedent: async (_t, ctx) => { seen = ctx; return null; } }, "x", { channelId: "C9", excludeTs: "5" });
   assert.deepEqual(seen, { channelId: "C9", excludeTs: "5" });
 });
+
+test("dispatchRequest reports progress between steps in order", async () => {
+  const maria2 = { name: "Maria R.", available: true, availabilityWindow: "tomorrow AM", skills: ["transport"], distanceMi: 1.2, pastHandled: [] };
+  const statuses: string[] = [];
+  await dispatchRequest(
+    {
+      classify: async () => ({ need_type: "transport", urgency: "high", summary: "x" }),
+      queryRoster: async () => [maria2],
+      recallPrecedent: async () => null,
+    },
+    "drive to dialysis",
+    {},
+    (s) => { statuses.push(s); },
+  );
+  assert.equal(statuses.length, 3);
+  assert.match(statuses[0], /Reading the request/i);
+  assert.match(statuses[1], /Need: transport/);
+  assert.match(statuses[2], /Searching workspace history/i);
+});

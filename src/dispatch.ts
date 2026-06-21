@@ -18,11 +18,23 @@ export interface DispatchResult {
   ping: string | null;
 }
 
+export type ProgressFn = (status: string) => void | Promise<void>;
+
 // Shared core used by BOTH the channel handler and the Assistant pane.
-export async function dispatchRequest(deps: DispatchDeps, text: string, ctx: RecallCtx): Promise<DispatchResult> {
+// `onProgress` is optional — the Assistant pane threads it through to narrate each
+// step BETWEEN the real awaits; the channel handler passes nothing and is unchanged.
+export async function dispatchRequest(
+  deps: DispatchDeps,
+  text: string,
+  ctx: RecallCtx,
+  onProgress?: ProgressFn,
+): Promise<DispatchResult> {
+  await onProgress?.("Reading the request…");
   const precedentP = deps.recallPrecedent(text, ctx); // independent of classification — run concurrently
   const need = await deps.classify(text);
+  await onProgress?.(`Need: ${need.need_type} · urgency ${need.urgency} — finding volunteers…`);
   const candidates = await deps.queryRoster(need.need_type);
+  await onProgress?.("Searching workspace history for who's helped before…");
   const precedent = await precedentP;
   const match = buildMatch(candidates, precedent, need);
   const ping = escalationPing(need);
