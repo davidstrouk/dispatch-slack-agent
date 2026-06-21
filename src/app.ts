@@ -6,6 +6,7 @@ import { makeRosterClient, queryRoster } from "./mcp-client.js";
 import { classify } from "./classify.js";
 import { assignmentCard } from "./card.js";
 import { dispatchRequest } from "./dispatch.js";
+import { makeAssistant } from "./assistant.js";
 import { FAKE_PRECEDENT } from "./fakes.js";
 import { embed } from "./embed.js";
 
@@ -40,18 +41,24 @@ async function getPrecedent(
   );
 }
 
+// Shared deps (DRY) used by BOTH the channel handler and the Assistant pane.
+// app.client (bot token) is passed to getPrecedent — behavior-equivalent because rtsClient
+// (user token) performs RTS regardless of the passed client.
+const deps = {
+  classify,
+  queryRoster: (nt: string) => queryRoster(roster, nt),
+  recallPrecedent: (text: string, ctx: any) => getPrecedent(app.client, text, ctx),
+};
+app.assistant(makeAssistant(deps, process.env.DISPATCH_CHANNEL_ID));
+
 // ── T-19: new help request → classify (Slack AI) → roster (MCP) → precedent (RTS) → card ──
-app.message(async ({ message, client, say, logger }) => {
+app.message(async ({ message, say, logger }) => {
   const m = message as any;
   // R-05: skip the bot's own posts, edits/joins (subtype), empty text, and other channels.
   if (m.subtype || m.bot_id || !m.text || (CHANNEL && m.channel !== CHANNEL)) return;
 
   const { need, match, ping } = await dispatchRequest(
-    {
-      classify,
-      queryRoster: (nt) => queryRoster(roster, nt),
-      recallPrecedent: (text, ctx) => getPrecedent(client, text, ctx),
-    },
+    deps,
     m.text,
     { channelId: m.channel, excludeTs: m.ts, actionToken: m.action_token },
   );
