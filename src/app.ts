@@ -5,7 +5,7 @@ import { recallPrecedent, recallPrecedentFallback } from "./rts.js";
 import { makeRosterClient, queryRoster } from "./mcp-client.js";
 import { classify } from "./classify.js";
 import { assignmentCard } from "./card.js";
-import { dispatchRequest } from "./dispatch.js";
+import { dispatchRequest, type RecallCtx } from "./dispatch.js";
 import { makeAssistant } from "./assistant.js";
 import { FAKE_PRECEDENT } from "./fakes.js";
 import { embed } from "./embed.js";
@@ -13,6 +13,11 @@ import { embed } from "./embed.js";
 const { App } = boltPkg;
 const USE_FAKES = process.env.USE_FAKES === "true";
 const CHANNEL = process.env.DISPATCH_CHANNEL_ID;
+if (!CHANNEL) {
+  console.warn(
+    "⚠️  DISPATCH_CHANNEL_ID is unset — RTS recall will be UNSCOPED (cross-channel/self-match risk). Set it to your community channel.",
+  );
+}
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -28,11 +33,7 @@ const roster = await makeRosterClient();
 const rtsClient = process.env.SLACK_USER_TOKEN ? new WebClient(process.env.SLACK_USER_TOKEN) : null;
 
 // RTS precedent recall (live → fallback), isolated so it can run concurrently with classify.
-async function getPrecedent(
-  client: any,
-  text: string,
-  ctx: { actionToken?: string; channelId?: string; excludeTs?: string },
-) {
+async function getPrecedent(client: WebClient, text: string, ctx: RecallCtx) {
   if (USE_FAKES) return FAKE_PRECEDENT;
   const search = rtsClient ?? client;
   return (
@@ -47,7 +48,7 @@ async function getPrecedent(
 const deps = {
   classify,
   queryRoster: (nt: string) => queryRoster(roster, nt),
-  recallPrecedent: (text: string, ctx: any) => getPrecedent(app.client, text, ctx),
+  recallPrecedent: (text: string, ctx: RecallCtx) => getPrecedent(app.client, text, ctx),
 };
 app.assistant(makeAssistant(deps, process.env.DISPATCH_CHANNEL_ID));
 
