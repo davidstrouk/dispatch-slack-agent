@@ -9,6 +9,7 @@
     "start": "node --import tsx src/app.ts",
     "build": "tsc -p tsconfig.json",
     "roster": "tsx src/roster-mcp-server.ts",
+    "seed": "tsx src/seed-channel.ts",
     "spike": "tsx src/spike-rts.ts",
     "smoke": "tsx src/smoke.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""

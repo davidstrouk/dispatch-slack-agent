@@ -54,3 +54,27 @@ test("notes a similar-request precedent when its author isn't on the roster", ()
 test("returns null when there are no candidates", () => {
   assert.equal(buildMatch([], precedentFor("Maria R."), need), null);
 });
+
+test("links the precedent volunteer by name in content when the author is the bot", () => {
+  // Live RTS returns author_name = the bot; the volunteer is named in the message text.
+  const botPrecedent: Precedent = {
+    authorName: "dispatch",
+    content: "✅ Resolved: Maria R. drove the Chen family to their dialysis appointment last month.",
+    permalink: "https://x/y", channelName: "mutual-aid", ts: "1.0", isAuthorBot: true,
+  };
+  // Devon is closer (would win on distance) but Maria is named in the recalled message.
+  const match = buildMatch([devon, maria], botPrecedent, need);
+  assert.equal(match?.volunteer.name, "Maria R.");
+  assert.match(match!.reason, /already handled this exact transport request before/);
+});
+
+test("does not name the bot when the recalled message references no roster volunteer", () => {
+  const botPrecedent: Precedent = {
+    authorName: "dispatch",
+    content: "✅ Resolved: someone helped a family move last week.",
+    permalink: "https://x/y", channelName: "mutual-aid", ts: "1.0", isAuthorBot: true,
+  };
+  const match = buildMatch([devon], botPrecedent, need);
+  assert.equal(match?.volunteer.name, "Devon K.");
+  assert.doesNotMatch(match!.reason, /dispatch/);
+});

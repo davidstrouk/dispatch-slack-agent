@@ -6,6 +6,7 @@ export interface Precedent {
   permalink: string;
   channelName: string;
   ts: string;
+  isAuthorBot?: boolean; // true when the recalled message was posted by a bot (e.g. seeded history)
 }
 
 export interface Volunteer {

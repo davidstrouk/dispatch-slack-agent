@@ -1,5 +1,6 @@
 import "dotenv/config";
 import boltPkg from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 import { recallPrecedent, recallPrecedentFallback } from "./rts.js";
 import { makeRosterClient, queryRoster } from "./mcp-client.js";
 import { classify } from "./classify.js";
@@ -22,11 +23,16 @@ const app = new App({
 
 const roster = await makeRosterClient();
 
+// RTS prefers a user token (search:read.public — no action_token needed); fall back to the
+// bot client (which needs the event's action_token).
+const rtsClient = process.env.SLACK_USER_TOKEN ? new WebClient(process.env.SLACK_USER_TOKEN) : null;
+
 // RTS precedent recall (live → fallback), isolated so it can run concurrently with classify.
 async function getPrecedent(client: any, text: string, actionToken?: string) {
   if (USE_FAKES) return FAKE_PRECEDENT;
+  const search = rtsClient ?? client;
   return (
-    (await recallPrecedent(client, text, actionToken).catch(() => null)) ?? // T-08
+    (await recallPrecedent(search, text, actionToken).catch(() => null)) ?? // T-08
     (await recallPrecedentFallback(embed, text).catch(() => null)) // T-09
   );
 }

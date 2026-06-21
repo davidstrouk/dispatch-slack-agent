@@ -26,8 +26,11 @@ export async function recallPrecedent(
     include_context_messages: false,
   })) as any;
 
-  // Expected result fields per RTS docs: author_name, content, permalink, channel_name, message_ts
-  const hit = res?.results?.messages?.[0] ?? res?.results?.[0];
+  // Verified live response fields: author_name, content, permalink, channel_name, message_ts,
+  // is_author_bot. Skip hits with empty content (e.g. joins / file shares) so the card never
+  // surfaces a blank precedent line.
+  const messages = res?.results?.messages ?? (Array.isArray(res?.results) ? res.results : []);
+  const hit = messages.find((m: any) => typeof m?.content === "string" && m.content.trim().length > 0);
   if (!hit) return null;
   return {
     authorName: hit.author_name,
@@ -35,6 +38,7 @@ export async function recallPrecedent(
     permalink: hit.permalink,
     channelName: hit.channel_name,
     ts: hit.message_ts,
+    isAuthorBot: hit.is_author_bot,
   };
 }
 
