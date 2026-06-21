@@ -18,7 +18,9 @@ const roster = await makeRosterClient();
 
 const need = await classify(plea);
 const candidates = await queryRoster(roster, need.need_type);
-const precedent = await recallPrecedent(rts, plea); // LIVE RTS — assistant.search.context
+const precedent = await recallPrecedent(rts, plea, {
+  channelId: process.env.DISPATCH_CHANNEL_ID,
+}); // LIVE RTS — assistant.search.context, scoped to the channel
 const match = buildMatch(candidates, precedent, need);
 
 console.log("PLEA:          ", plea);

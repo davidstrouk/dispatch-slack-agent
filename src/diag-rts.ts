@@ -16,12 +16,9 @@ const res: any = await client.apiCall("assistant.search.context", {
   include_context_messages: true, // turn ON to see if text appears here
 });
 
-console.log("TOP-LEVEL KEYS:", Object.keys(res));
-console.log("results type:", Array.isArray(res.results) ? "array" : typeof res.results);
-console.log("results KEYS:", res.results && !Array.isArray(res.results) ? Object.keys(res.results) : "(n/a)");
-
 const items = res?.results?.messages ?? res?.results ?? [];
-console.log("ITEM COUNT:", Array.isArray(items) ? items.length : "(not array)");
-console.log("FIRST ITEM FIELD NAMES:", items[0] ? Object.keys(items[0]) : "(none)");
-console.log("FIRST ITEM (raw):");
-console.log(JSON.stringify(items[0], null, 2));
+console.log(`QUERY: ${query}`);
+console.log(`RANKED RESULTS (${items.length}):`);
+items.forEach((m: any, i: number) => {
+  console.log(`  #${i + 1}  [${m.channel_name}] ${m.author_name}: ${String(m.content).slice(0, 70)}`);
+});

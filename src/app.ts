@@ -28,11 +28,15 @@ const roster = await makeRosterClient();
 const rtsClient = process.env.SLACK_USER_TOKEN ? new WebClient(process.env.SLACK_USER_TOKEN) : null;
 
 // RTS precedent recall (live → fallback), isolated so it can run concurrently with classify.
-async function getPrecedent(client: any, text: string, actionToken?: string) {
+async function getPrecedent(
+  client: any,
+  text: string,
+  ctx: { actionToken?: string; channelId?: string; excludeTs?: string },
+) {
   if (USE_FAKES) return FAKE_PRECEDENT;
   const search = rtsClient ?? client;
   return (
-    (await recallPrecedent(search, text, actionToken).catch(() => null)) ?? // T-08
+    (await recallPrecedent(search, text, ctx).catch(() => null)) ?? // T-08
     (await recallPrecedentFallback(embed, text).catch(() => null)) // T-09
   );
 }
@@ -44,7 +48,12 @@ app.message(async ({ message, client, say, logger }) => {
   if (m.subtype || m.bot_id || !m.text || (CHANNEL && m.channel !== CHANNEL)) return;
 
   // R-04: precedent recall doesn't depend on classification — run it concurrently.
-  const precedentP = getPrecedent(client, m.text, m.action_token);
+  // Scope recall to this channel and exclude the triggering message (no self-match).
+  const precedentP = getPrecedent(client, m.text, {
+    actionToken: m.action_token,
+    channelId: m.channel,
+    excludeTs: m.ts,
+  });
   const need = await classify(m.text); // T-11
   const candidates = await queryRoster(roster, need.need_type); // T-14
   const precedent = await precedentP;

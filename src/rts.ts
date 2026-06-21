@@ -6,31 +6,44 @@ import type { Precedent } from "./types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+export interface RecallOpts {
+  actionToken?: string; // bot tokens require an action_token from the event; user tokens don't
+  channelId?: string; // scope the search to one channel (avoids cross-channel noise)
+  excludeTs?: string; // skip this message (the triggering plea) so it can't self-match
+}
+
 // ── T-07/T-08: Real-Time Search precedent recall (PRIMARY — build this first) ──
 // Slack RTS API method: assistant.search.context (GA 2026-02-17).
-// NOTE (verify in sandbox): bot tokens require an `action_token` captured from the
-// triggering message/app_mention event. A user token (xoxp-) with search:read.public
-// does not. Most @slack/web-api versions don't type this method yet, so we use apiCall.
+// Live-verified: unscoped search returns unstable cross-channel matches and self-matches,
+// so we scope to the channel via an `in:<#ID>` operator and exclude the triggering message.
 export async function recallPrecedent(
   client: WebClient,
   query: string,
-  actionToken?: string,
+  opts: RecallOpts = {},
 ): Promise<Precedent | null> {
+  const scopedQuery = opts.channelId ? `${query} in:<#${opts.channelId}>` : query;
   const res = (await client.apiCall("assistant.search.context", {
-    query, // natural language, e.g. "ride to dialysis appointment tomorrow"
-    action_token: actionToken,
+    query: scopedQuery,
+    action_token: opts.actionToken,
     content_types: ["messages"],
     channel_types: ["public_channel"],
-    limit: 5,
+    limit: 8,
     sort: "score",
     include_context_messages: false,
   })) as any;
 
   // Verified live response fields: author_name, content, permalink, channel_name, message_ts,
-  // is_author_bot. Skip hits with empty content (e.g. joins / file shares) so the card never
-  // surfaces a blank precedent line.
+  // is_author_bot. Skip empty-content hits (joins / file shares) and the triggering message.
   const messages = res?.results?.messages ?? (Array.isArray(res?.results) ? res.results : []);
-  const hit = messages.find((m: any) => typeof m?.content === "string" && m.content.trim().length > 0);
+  const valid = messages.filter(
+    (m: any) =>
+      typeof m?.content === "string" &&
+      m.content.trim().length > 0 &&
+      m.message_ts !== opts.excludeTs,
+  );
+  // Prefer Dispatch's own resolution ledger (bot-authored "Resolved: X did Y") over stray
+  // user pleas, which name no handler. Fall back to the top valid hit if no ledger record.
+  const hit = valid.find((m: any) => m.is_author_bot) ?? valid[0];
   if (!hit) return null;
   return {
     authorName: hit.author_name,

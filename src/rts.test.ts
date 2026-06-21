@@ -25,6 +25,36 @@ test("RTS returns null when every hit has empty content", async () => {
   assert.equal(await recallPrecedent(client, "q"), null);
 });
 
+test("RTS excludes the triggering message itself by ts (no self-match)", async () => {
+  const client = clientReturning([
+    { author_name: "user", content: "drive to dialysis", permalink: "self", channel_name: "mutual-aid", message_ts: "100" },
+    { author_name: "dispatch", content: "Maria R. drove to dialysis", permalink: "p2", channel_name: "mutual-aid", message_ts: "50", is_author_bot: true },
+  ]);
+  const p = await recallPrecedent(client, "drive to dialysis", { excludeTs: "100" });
+  assert.equal(p?.permalink, "p2");
+});
+
+test("RTS prefers Dispatch's resolution records (bot) over stray user pleas", async () => {
+  const client = clientReturning([
+    { author_name: "someone", content: "can anyone help with a dialysis ride?", permalink: "plea", channel_name: "mutual-aid", message_ts: "200", is_author_bot: false },
+    { author_name: "dispatch", content: "Maria R. drove the Chen family to dialysis", permalink: "ledger", channel_name: "mutual-aid", message_ts: "50", is_author_bot: true },
+  ]);
+  const p = await recallPrecedent(client, "dialysis ride");
+  assert.equal(p?.permalink, "ledger");
+});
+
+test("RTS scopes the search to the channel when channelId is given", async () => {
+  let sentQuery = "";
+  const client = {
+    apiCall: async (_m: string, args: any) => {
+      sentQuery = args.query;
+      return { ok: true, results: { messages: [] } };
+    },
+  } as unknown as WebClient;
+  await recallPrecedent(client, "dialysis", { channelId: "C0BCWEJTCAC" });
+  assert.match(sentQuery, /in:<#C0BCWEJTCAC>/);
+});
+
 // The seeded corpus has no precomputed embeddings, so recallPrecedentFallback uses the
 // keyword path. embed() is never called — pass a stub that throws to prove that.
 const noEmbed = async (): Promise<number[]> => {
