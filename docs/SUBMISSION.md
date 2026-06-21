@@ -52,5 +52,5 @@ The unique value of an in-Slack agent isn't the model — it's the workspace's o
 ## Links
 - **Demo video:** _[TBD — record after build]_
 - **Architecture diagram:** `docs/architecture.png`
-- **Repo:** _[TBD — push to public GitHub]_
+- **Repo:** https://github.com/davidstrouk/dispatch-slack-agent
 - **Judge sandbox access:** _[TBD — provision sandbox, add judges' emails]_
