@@ -77,12 +77,27 @@ export async function recallPrecedentFallback(
 }
 
 // Last-resort lexical match — runs with no LLM/embeddings keys at all.
+// Strips stopwords and weights matches by term length so specific terms (e.g. "dialysis")
+// dominate filler words ("a", "to") that otherwise skew a tiny corpus toward the wrong thread.
+const STOPWORDS = new Set(
+  ("a an and the to of for in on at as is are was were be been being i we you he she it they them his " +
+   "her their our your my me with without over under up off out so that this these those who whom when " +
+   "where why how can could would should will just from during while about into than then there here not " +
+   "no nobody someone anyone new need needs take takes get got had has have").split(/\s+/),
+);
+
+function tokenize(s: string): string[] {
+  return s.toLowerCase().split(/\W+/).filter((w) => w.length > 2 && !STOPWORDS.has(w));
+}
+
 function keywordRecall(query: string): Precedent | null {
-  const q = new Set(query.toLowerCase().split(/\W+/).filter(Boolean));
+  const q = new Set(tokenize(query));
   let best: { row: SeedRow; score: number } | null = null;
   for (const row of corpus) {
-    const overlap = row.content.toLowerCase().split(/\W+/).filter((w) => q.has(w)).length;
-    if (!best || overlap > best.score) best = { row, score: overlap };
+    const score = tokenize(row.content)
+      .filter((w) => q.has(w))
+      .reduce((sum, w) => sum + w.length, 0); // longer term = more specific signal
+    if (!best || score > best.score) best = { row, score };
   }
   return best && best.score > 0 ? strip(best.row) : null;
 }

@@ -21,18 +21,26 @@ const app = new App({
 
 const roster = await makeRosterClient();
 
+// RTS precedent recall (live → fallback), isolated so it can run concurrently with classify.
+async function getPrecedent(client: any, text: string, actionToken?: string) {
+  if (USE_FAKES) return FAKE_PRECEDENT;
+  return (
+    (await recallPrecedent(client, text, actionToken).catch(() => null)) ?? // T-08
+    (await recallPrecedentFallback(embed, text).catch(() => null)) // T-09
+  );
+}
+
 // ── T-19: new help request → classify (Slack AI) → roster (MCP) → precedent (RTS) → card ──
 app.message(async ({ message, client, say, logger }) => {
   const m = message as any;
-  if (m.subtype || !m.text || (CHANNEL && m.channel !== CHANNEL)) return;
+  // R-05: skip the bot's own posts, edits/joins (subtype), empty text, and other channels.
+  if (m.subtype || m.bot_id || !m.text || (CHANNEL && m.channel !== CHANNEL)) return;
 
+  // R-04: precedent recall doesn't depend on classification — run it concurrently.
+  const precedentP = getPrecedent(client, m.text, m.action_token);
   const need = await classify(m.text); // T-11
   const candidates = await queryRoster(roster, need.need_type); // T-14
-
-  const precedent = USE_FAKES
-    ? FAKE_PRECEDENT
-    : (await recallPrecedent(client, m.text, m.action_token).catch(() => null)) ?? // T-08
-      (await recallPrecedentFallback(embed, m.text).catch(() => null)); // T-09
+  const precedent = await precedentP;
 
   const match = buildMatch(candidates, precedent, need); // T-16/17
   if (!match) {
