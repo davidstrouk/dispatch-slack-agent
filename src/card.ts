@@ -1,3 +1,4 @@
+import { encodeAcceptValue } from "./resolution.js";
 import type { Match, NeedClassification } from "./types.js";
 
 const URGENCY_EMOJI: Record<string, string> = {
@@ -38,7 +39,7 @@ export function assignmentCard(need: NeedClassification, match: Match) {
             action_id: "accept_assignment",
             style: "primary",
             text: { type: "plain_text", text: "Accept" },
-            value: v.name,
+            value: encodeAcceptValue(v.name, need.need_type, need.summary),
           },
           {
             type: "button",

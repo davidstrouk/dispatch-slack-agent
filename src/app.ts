@@ -7,6 +7,7 @@ import { classify } from "./classify.js";
 import { assignmentCard } from "./card.js";
 import { dispatchRequest, type RecallCtx } from "./dispatch.js";
 import { makeAssistant } from "./assistant.js";
+import { parseAcceptValue, resolutionRecord } from "./resolution.js";
 import { FAKE_PRECEDENT } from "./fakes.js";
 import { embed } from "./embed.js";
 
@@ -74,11 +75,18 @@ app.message(async ({ message, say, logger }) => {
   logger.info(`Dispatched ${need.need_type} → ${match.volunteer.name}`);
 });
 
-// ── Cut-on-slip (T-21): Accept flips the card to "On it" ──
-app.action("accept_assignment", async ({ ack, body, respond }) => {
+// ── Accept: flip the card to "On it" AND close the ledger loop ──
+// Posts a "✅ Resolved:" record to #mutual-aid so today's assignment becomes a future
+// RTS-recalled precedent for the next similar request.
+app.action("accept_assignment", async ({ ack, body, client, respond }) => {
   await ack();
-  const name = (body as any).actions[0].value;
-  await respond({ replace_original: true, text: `✅ *On it* — ${name} accepted the request.` });
+  const ctx = parseAcceptValue((body as any).actions[0].value);
+  await respond({ replace_original: true, text: `✅ *On it* — ${ctx.volunteer} accepted the request.` });
+  if (CHANNEL) {
+    await client.chat
+      .postMessage({ channel: CHANNEL, text: resolutionRecord(ctx) })
+      .catch((e) => console.error("resolution post failed:", e));
+  }
 });
 
 app.action("reassign", async ({ ack }) => {

@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { assignmentCard } from "./card.js";
+import { parseAcceptValue } from "./resolution.js";
 import type { Match, NeedClassification, Volunteer } from "./types.js";
 
 const need: NeedClassification = { need_type: "transport", urgency: "high", summary: "ride" };
@@ -37,4 +38,14 @@ test("card notes when no precedent was found", () => {
   const match: Match = { volunteer, reason: "x", precedent: null };
   const blocks = JSON.stringify(assignmentCard(need, match).blocks);
   assert.match(blocks, /No prior precedent/);
+});
+
+test("Accept button carries the assignment context for the ledger loop", () => {
+  const match: Match = { volunteer, reason: "x", precedent: null };
+  const actions = (assignmentCard(need, match).blocks as any[]).find((b) => b.type === "actions");
+  const accept = actions.elements.find((e: any) => e.action_id === "accept_assignment");
+  const ctx = parseAcceptValue(accept.value);
+  assert.equal(ctx.volunteer, "Maria R.");
+  assert.equal(ctx.need_type, "transport");
+  assert.equal(ctx.summary, need.summary);
 });
