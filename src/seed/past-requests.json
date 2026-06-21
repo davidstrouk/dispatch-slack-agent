@@ -1,0 +1,86 @@
+[
+  {
+    "authorName": "Maria R.",
+    "content": "Drove the Chen family to their dialysis appointment — happy to be their regular ride.",
+    "permalink": "https://app.slack.com/seed/chen-dialysis",
+    "channelName": "mutual-aid",
+    "ts": "1716950400.000000"
+  },
+  {
+    "authorName": "Devon K.",
+    "content": "Picked up a week of groceries for the Okafor household when they were down with flu.",
+    "permalink": "https://app.slack.com/seed/okafor-groceries",
+    "channelName": "mutual-aid",
+    "ts": "1717123200.000000"
+  },
+  {
+    "authorName": "Priya S.",
+    "content": "Covered after-school childcare for two kids while their mom worked a double shift.",
+    "permalink": "https://app.slack.com/seed/childcare-double-shift",
+    "channelName": "mutual-aid",
+    "ts": "1717209600.000000"
+  },
+  {
+    "authorName": "Maria R.",
+    "content": "Gave Mr. Alvarez a lift to his cardiology follow-up across town.",
+    "permalink": "https://app.slack.com/seed/alvarez-cardiology",
+    "channelName": "mutual-aid",
+    "ts": "1717296000.000000"
+  },
+  {
+    "authorName": "Tomas L.",
+    "content": "Delivered baby formula and diapers to a new mom who couldn't leave the house.",
+    "permalink": "https://app.slack.com/seed/formula-delivery",
+    "channelName": "mutual-aid",
+    "ts": "1717382400.000000"
+  },
+  {
+    "authorName": "Aisha B.",
+    "content": "Picked up a prescription from the pharmacy for a neighbor recovering from surgery.",
+    "permalink": "https://app.slack.com/seed/pharmacy-pickup",
+    "channelName": "mutual-aid",
+    "ts": "1717468800.000000"
+  },
+  {
+    "authorName": "Devon K.",
+    "content": "Drove an elderly resident to a physical therapy appointment downtown.",
+    "permalink": "https://app.slack.com/seed/pt-appointment",
+    "channelName": "mutual-aid",
+    "ts": "1717555200.000000"
+  },
+  {
+    "authorName": "Grace M.",
+    "content": "Helped move furniture for a family relocating to emergency housing.",
+    "permalink": "https://app.slack.com/seed/emergency-housing-move",
+    "channelName": "mutual-aid",
+    "ts": "1717641600.000000"
+  },
+  {
+    "authorName": "Priya S.",
+    "content": "Cooked and dropped off three meals for a family during a hard week.",
+    "permalink": "https://app.slack.com/seed/meal-dropoff",
+    "channelName": "mutual-aid",
+    "ts": "1717728000.000000"
+  },
+  {
+    "authorName": "Tomas L.",
+    "content": "Gave a ride to a job interview for someone without a car.",
+    "permalink": "https://app.slack.com/seed/interview-ride",
+    "channelName": "mutual-aid",
+    "ts": "1717814400.000000"
+  },
+  {
+    "authorName": "Aisha B.",
+    "content": "Sat with a homebound senior so their caregiver could run errands.",
+    "permalink": "https://app.slack.com/seed/respite-sitting",
+    "channelName": "mutual-aid",
+    "ts": "1717900800.000000"
+  },
+  {
+    "authorName": "Grace M.",
+    "content": "Picked up groceries and household supplies for a single parent on a tight week.",
+    "permalink": "https://app.slack.com/seed/single-parent-groceries",
+    "channelName": "mutual-aid",
+    "ts": "1717987200.000000"
+  }
+]

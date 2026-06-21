@@ -1,0 +1,37 @@
+{
+  "display_information": {
+    "name": "Dispatch",
+    "description": "Mutual-aid coordination agent — intake, classify, match, recall.",
+    "background_color": "#1f6feb"
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "dispatch",
+      "always_online": true
+    }
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "app_mentions:read",
+        "channels:history",
+        "chat:write",
+        "search:read.public"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "bot_events": [
+        "app_mention",
+        "message.channels"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true
+    },
+    "socket_mode_enabled": true,
+    "org_deploy_enabled": false,
+    "token_rotation_enabled": false
+  }
+}

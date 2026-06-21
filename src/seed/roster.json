@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Maria R.",
+    "available": true,
+    "availabilityWindow": "tomorrow AM",
+    "skills": ["transport"],
+    "distanceMi": 1.2,
+    "pastHandled": ["dialysis transport", "cardiology ride"]
+  },
+  {
+    "name": "Devon K.",
+    "available": true,
+    "availabilityWindow": "today",
+    "skills": ["transport", "groceries"],
+    "distanceMi": 4.8,
+    "pastHandled": ["grocery run", "physical therapy ride"]
+  },
+  {
+    "name": "Priya S.",
+    "available": true,
+    "availabilityWindow": "weekday afternoons",
+    "skills": ["childcare", "groceries"],
+    "distanceMi": 2.6,
+    "pastHandled": ["after-school childcare", "meal dropoff"]
+  },
+  {
+    "name": "Tomas L.",
+    "available": true,
+    "availabilityWindow": "evenings",
+    "skills": ["transport", "groceries"],
+    "distanceMi": 6.1,
+    "pastHandled": ["formula delivery", "interview ride"]
+  },
+  {
+    "name": "Aisha B.",
+    "available": false,
+    "availabilityWindow": "back next week",
+    "skills": ["medical", "childcare"],
+    "distanceMi": 3.0,
+    "pastHandled": ["pharmacy pickup", "respite sitting"]
+  },
+  {
+    "name": "Grace M.",
+    "available": true,
+    "availabilityWindow": "weekends",
+    "skills": ["housing", "groceries"],
+    "distanceMi": 7.4,
+    "pastHandled": ["housing move", "grocery run"]
+  }
+]
