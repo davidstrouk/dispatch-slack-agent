@@ -8,14 +8,19 @@
     "bot_user": {
       "display_name": "dispatch",
       "always_online": true
+    },
+    "assistant_view": {
+      "assistant_description": "Find the right volunteer for any community need."
     }
   },
   "oauth_config": {
     "scopes": {
       "bot": [
         "app_mentions:read",
+        "assistant:write",
         "channels:history",
         "chat:write",
+        "im:history",
         "search:read.public"
       ]
     }
@@ -24,7 +29,10 @@
     "event_subscriptions": {
       "bot_events": [
         "app_mention",
-        "message.channels"
+        "assistant_thread_started",
+        "assistant_thread_context_changed",
+        "message.channels",
+        "message.im"
       ]
     },
     "interactivity": {
