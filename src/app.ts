@@ -5,6 +5,7 @@ import { makeRosterClient, queryRoster } from "./mcp-client.js";
 import { classify } from "./classify.js";
 import { buildMatch } from "./match.js";
 import { assignmentCard } from "./card.js";
+import { escalationPing } from "./escalation.js";
 import { FAKE_PRECEDENT } from "./fakes.js";
 import { embed } from "./embed.js";
 
@@ -48,6 +49,8 @@ app.message(async ({ message, client, say, logger }) => {
     return;
   }
 
+  const ping = escalationPing(need); // T-22: notify the channel on urgent requests
+  if (ping) await say(ping);
   await say(assignmentCard(need, match)); // T-18
   logger.info(`Dispatched ${need.need_type} → ${match.volunteer.name}`);
 });

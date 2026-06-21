@@ -10,7 +10,8 @@
     "build": "tsc -p tsconfig.json",
     "roster": "tsx src/roster-mcp-server.ts",
     "spike": "tsx src/spike-rts.ts",
-    "smoke": "tsx src/smoke.ts"
+    "smoke": "tsx src/smoke.ts",
+    "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
