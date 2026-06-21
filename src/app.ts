@@ -4,9 +4,8 @@ import { WebClient } from "@slack/web-api";
 import { recallPrecedent, recallPrecedentFallback } from "./rts.js";
 import { makeRosterClient, queryRoster } from "./mcp-client.js";
 import { classify } from "./classify.js";
-import { buildMatch } from "./match.js";
 import { assignmentCard } from "./card.js";
-import { escalationPing } from "./escalation.js";
+import { dispatchRequest } from "./dispatch.js";
 import { FAKE_PRECEDENT } from "./fakes.js";
 import { embed } from "./embed.js";
 
@@ -47,25 +46,22 @@ app.message(async ({ message, client, say, logger }) => {
   // R-05: skip the bot's own posts, edits/joins (subtype), empty text, and other channels.
   if (m.subtype || m.bot_id || !m.text || (CHANNEL && m.channel !== CHANNEL)) return;
 
-  // R-04: precedent recall doesn't depend on classification — run it concurrently.
-  // Scope recall to this channel and exclude the triggering message (no self-match).
-  const precedentP = getPrecedent(client, m.text, {
-    actionToken: m.action_token,
-    channelId: m.channel,
-    excludeTs: m.ts,
-  });
-  const need = await classify(m.text); // T-11
-  const candidates = await queryRoster(roster, need.need_type); // T-14
-  const precedent = await precedentP;
+  const { need, match, ping } = await dispatchRequest(
+    {
+      classify,
+      queryRoster: (nt) => queryRoster(roster, nt),
+      recallPrecedent: (text, ctx) => getPrecedent(client, text, ctx),
+    },
+    m.text,
+    { channelId: m.channel, excludeTs: m.ts, actionToken: m.action_token },
+  );
 
-  const match = buildMatch(candidates, precedent, need); // T-16/17
   if (!match) {
     await say(`No available volunteer for *${need.need_type}* right now.`);
     return;
   }
 
-  const ping = escalationPing(need); // T-22: notify the channel on urgent requests
-  if (ping) await say(ping);
+  if (ping) await say(ping); // T-22: notify the channel on urgent requests
   await say(assignmentCard(need, match)); // T-18
   logger.info(`Dispatched ${need.need_type} → ${match.volunteer.name}`);
 });
