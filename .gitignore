@@ -8,3 +8,4 @@ dist/
 # hyperframes demo build artifacts
 demo/dispatch-demo.mp4
 demo/.hyperframes/
+demo/assets/vo/
